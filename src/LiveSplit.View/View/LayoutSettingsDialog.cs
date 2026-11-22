@@ -18,6 +18,8 @@ public partial class LayoutSettingsDialog : Form
 
     private readonly List<FontOverrides> _fontOverrideSnapshots;
     private readonly List<LayoutComponent> _layoutComponents;
+    private readonly IComponent _initialTabComponent;
+    private bool _componentsAdded;
     private bool _fontSnapshotCleanupDone;
 
     protected override void Dispose(bool disposing)
@@ -55,9 +57,49 @@ public partial class LayoutSettingsDialog : Form
         Components = [];
         _fontOverrideSnapshots = [];
         _layoutComponents = [];
+        _initialTabComponent = tabComponent;
         AddNewTab("Layout", new LayoutSettingsControl(settings, layout));
-        AddComponents(tabComponent);
         UiLocalizer.Apply(this, LanguageResolver.ResolveCurrentCultureLanguage());
+    }
+
+    protected override void OnShown(EventArgs e)
+    {
+        EnsureComponentsAdded();
+        base.OnShown(e);
+    }
+
+    private void EnsureComponentsAdded()
+    {
+        if (_componentsAdded)
+        {
+            return;
+        }
+
+        _componentsAdded = true;
+
+        // Component settings controls also use AutoScaleMode.Font. Creating
+        // them before this dialog has completed its own DPI scaling causes a
+        // second scaling pass at high DPI, so their widths become larger than
+        // the tab page and remain clipped even after the dialog is widened.
+        // Wait until the dialog has a real window and final scaled dimensions.
+        AddComponents(_initialTabComponent);
+        UiLocalizer.Apply(this, LanguageResolver.ResolveCurrentCultureLanguage());
+        AdjustTabItemHeight();
+    }
+
+    private void AdjustTabItemHeight()
+    {
+        int textHeight = Math.Max(
+            tabControl.Font.Height,
+            TextRenderer.MeasureText("Ag", tabControl.Font).Height);
+        int verticalPadding = Math.Max(3, tabControl.Padding.Y) * 2;
+        int desiredHeight = textHeight + verticalPadding + 4;
+
+        Size currentSize = tabControl.ItemSize;
+        if (desiredHeight > currentSize.Height)
+        {
+            tabControl.ItemSize = new Size(currentSize.Width, desiredHeight);
+        }
     }
 
     private void btnOK_Click(object sender, EventArgs e)
@@ -171,11 +213,13 @@ public partial class LayoutSettingsDialog : Form
             Name = name,
         };
 
-        // Add the page to the tab control first so it has the real ClientSize
-        // before children Anchor against it. Without this, Anchor=Right is
-        // computed against the unparented TabPage default (~200 px) and the
-        // child stays narrow until something else forces re-layout.
+        // Add the page first, then explicitly give it the TabControl bounds.
+        // Until the control handle exists a newly added TabPage still reports
+        // its WinForms default (~200x100). If children with Anchor=Right are
+        // added then, their right distance becomes negative and the controls
+        // grow wider than the viewport when the dialog is resized.
         tabControl.TabPages.Add(page);
+        page.Bounds = tabControl.DisplayRectangle;
 
         var fontPanel = new FontOverridePanel();
         fontPanel.Bind(fontOverrides, Layout.Settings, usedFonts);
