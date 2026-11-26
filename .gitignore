@@ -11,6 +11,7 @@ artifacts/
 bin/
 obj/
 publish/
+src/LiveSplit.Bootstrap/**/*.exe
 
 # User-specific files
 *.user

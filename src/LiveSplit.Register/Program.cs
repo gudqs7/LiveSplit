@@ -26,12 +26,12 @@ public class Program
             Log.Error(ex);
         }
 
-        // Add LiveSplit.exe to Registry if not already there, so that Emulated Browser can load Twitch properly (look up Emulated Browsers & Compatibility View if interested)
+        // Register the managed process, which hosts the embedded browser controls.
         try
         {
-            if (!InternetExplorerBrowserEmulation.IsBrowserEmulationSet("LiveSplit.exe"))
+            if (!InternetExplorerBrowserEmulation.IsBrowserEmulationSet("LiveSplit.Managed.exe"))
             {
-                InternetExplorerBrowserEmulation.SetBrowserEmulationVersion("LiveSplit.exe");
+                InternetExplorerBrowserEmulation.SetBrowserEmulationVersion("LiveSplit.Managed.exe");
             }
         }
         catch (Exception ex)

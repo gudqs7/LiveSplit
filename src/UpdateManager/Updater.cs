@@ -149,7 +149,7 @@ public static class Updater
             foreach (FileChange change in updates.SelectMany(x => x.FileChanges))
             {
                 string path = change.Path;
-                string localPath = change.LocalPath ?? change.Path;
+                string localPath = GetLocalPath(change.LocalPath ?? change.Path);
 
                 switch (change.Status)
                 {
@@ -201,6 +201,21 @@ public static class Updater
         }
 
         new WebClient().DownloadFile(url, path);
+    }
+
+    private static string GetLocalPath(string path)
+    {
+        if (!File.Exists("LiveSplit.Managed.exe"))
+        {
+            return path;
+        }
+
+        return path switch
+        {
+            "LiveSplit.exe" => "LiveSplit.Managed.exe",
+            "LiveSplit.exe.config" => "LiveSplit.Managed.exe.config",
+            _ => path
+        };
     }
 
     public static void UpdateAll(IEnumerable<IUpdateable> updateables, string updateManagerDownloadURL, string updateManagerConfigDownloadUrl)

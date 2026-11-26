@@ -50,6 +50,7 @@ You can browse the [Issues](https://github.com/LiveSplit/LiveSplit/issues) to fi
 LiveSplit uses .NET Framework 4.8.1. To compile LiveSplit, you need the following components installed:
 - [.NET 10.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 - [.NET Framework 4.8.1 Developer Pack](https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net481-developer-pack-offline-installer)
+- [Go 1.25 or newer](https://go.dev/dl/) (builds the native bootstrap executable)
 
 After cloning, simply run `dotnet build LiveSplit.slnx` from the root of the repository.
 

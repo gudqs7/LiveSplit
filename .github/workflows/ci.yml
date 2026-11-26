@@ -30,6 +30,16 @@ jobs:
         with:
           dotnet-version: '10.x'
 
+      - name: Set up Go environment
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: .\src\LiveSplit.Bootstrap\go.mod
+          cache-dependency-path: .\src\LiveSplit.Bootstrap\go.sum
+
+      - name: Test native bootstrap
+        working-directory: .\src\LiveSplit.Bootstrap
+        run: go test ./...
+
       - name: Build LiveSplit
         run: >
           dotnet build
@@ -53,6 +63,15 @@ jobs:
           -c Release
           --no-restore --no-build
           .\LiveSplit.slnx
+
+      - name: Verify release executables
+        run: |
+          if (!(Test-Path .\artifacts\build\release\LiveSplit.exe)) {
+            throw "Native LiveSplit.exe bootstrap was not built."
+          }
+          if (!(Test-Path .\artifacts\build\release\LiveSplit.Managed.exe)) {
+            throw "Managed LiveSplit.Managed.exe was not built."
+          }
 
       - name: Upload build as an artifact
         uses: actions/upload-artifact@v7

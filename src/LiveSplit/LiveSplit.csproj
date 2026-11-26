@@ -2,10 +2,13 @@
 
   <PropertyGroup>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
+    <AssemblyName>LiveSplit.Managed</AssemblyName>
 
     <OutputType>WinExe</OutputType>
     <UseWindowsForms>true</UseWindowsForms>
     <TargetFramework>net4.8.1</TargetFramework>
+    <BootstrapProjectDirectory>$(SrcPath)/LiveSplit.Bootstrap</BootstrapProjectDirectory>
+    <BootstrapExecutable>$(OutputPath)/LiveSplit.exe</BootstrapExecutable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,6 +50,16 @@
     <Delete Files="$(OutputPath)/Components/System.Numerics.Vectors.dll" />
     <Delete Files="$(OutputPath)/Components/System.Resources.Extensions.dll" />
     <Delete Files="$(OutputPath)/Components/System.Runtime.CompilerServices.Unsafe.dll" />
+  </Target>
+
+  <Target Name="BuildNativeBootstrap" AfterTargets="Build" Condition="'$(DesignTimeBuild)' != 'true'">
+    <PropertyGroup>
+      <BootstrapLdFlags>-H windowsgui</BootstrapLdFlags>
+      <BootstrapLdFlags Condition="'$(Configuration)' == 'Release'">$(BootstrapLdFlags) -s -w</BootstrapLdFlags>
+    </PropertyGroup>
+    <Exec
+      Command="go build -trimpath -ldflags=&quot;$(BootstrapLdFlags)&quot; -o &quot;$(BootstrapExecutable)&quot; ."
+      WorkingDirectory="$(BootstrapProjectDirectory)" />
   </Target>
 
 </Project>
