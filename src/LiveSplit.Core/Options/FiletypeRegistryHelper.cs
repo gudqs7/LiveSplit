@@ -364,9 +364,9 @@ public static class FiletypeRegistryHelper
         RegistryKey shell = lssApplicationKey.CreateSubKey("shell");
         RegistryKey open = shell.CreateSubKey("open");
         RegistryKey command = open.CreateSubKey("command");
-        command.SetValue("", $"\"{Application.ExecutablePath.Replace("LiveSplit.Register.exe", "LiveSplit.exe")}\" -s \"{"%1"}\"");
+        command.SetValue("", $"\"{LauncherExecutablePath}\" -s \"{"%1"}\"");
         RegistryKey iconKey = lssApplicationKey.CreateSubKey("DefaultIcon");
-        iconKey.SetValue("", $"{Path.GetDirectoryName(Application.ExecutablePath)}\\Resources\\{"SplitsFile.ico"}");
+        iconKey.SetValue("", $"{LauncherDirectory}\\Resources\\{"SplitsFile.ico"}");
         SHChangeNotify(HChangeNotifyEventID.SHCNE_ASSOCCHANGED, HChangeNotifyFlags.SHCNF_IDLIST, IntPtr.Zero, IntPtr.Zero);
 
     }
@@ -378,13 +378,19 @@ public static class FiletypeRegistryHelper
         RegistryKey shell = lssApplicationKey.OpenSubKey("shell");
         RegistryKey open = shell.OpenSubKey("open");
         RegistryKey command = open.OpenSubKey("command");
-        if (command.GetValue("").ToString() != $"\"{Application.ExecutablePath.Replace("LiveSplit.Register.exe", "LiveSplit.exe")}\" -s \"{"%1"}\"")
+        if (!string.Equals(
+            command.GetValue("").ToString(),
+            $"\"{LauncherExecutablePath}\" -s \"{"%1"}\"",
+            StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
 
         RegistryKey iconKey = lssApplicationKey.OpenSubKey("DefaultIcon");
-        if (iconKey.GetValue("").ToString() != $"{Path.GetDirectoryName(Application.ExecutablePath)}\\Resources\\{"SplitsFile.ico"}")
+        if (!string.Equals(
+            iconKey.GetValue("").ToString(),
+            $"{LauncherDirectory}\\Resources\\{"SplitsFile.ico"}",
+            StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
@@ -413,9 +419,9 @@ public static class FiletypeRegistryHelper
         RegistryKey shell = lslApplicationKey.CreateSubKey("shell");
         RegistryKey open = shell.CreateSubKey("open");
         RegistryKey command = open.CreateSubKey("command");
-        command.SetValue("", $"\"{Application.ExecutablePath.Replace("LiveSplit.Register.exe", "LiveSplit.exe")}\" -l \"{"%1"}\"");
+        command.SetValue("", $"\"{LauncherExecutablePath}\" -l \"{"%1"}\"");
         RegistryKey iconKey = lslApplicationKey.CreateSubKey("DefaultIcon");
-        iconKey.SetValue("", $"{Path.GetDirectoryName(Application.ExecutablePath)}\\Resources\\{"LayoutFile.ico"}");
+        iconKey.SetValue("", $"{LauncherDirectory}\\Resources\\{"LayoutFile.ico"}");
         SHChangeNotify(HChangeNotifyEventID.SHCNE_ASSOCCHANGED, HChangeNotifyFlags.SHCNF_IDLIST, IntPtr.Zero, IntPtr.Zero);
     }
 
@@ -426,13 +432,19 @@ public static class FiletypeRegistryHelper
         RegistryKey shell = lslApplicationKey.OpenSubKey("shell");
         RegistryKey open = shell.OpenSubKey("open");
         RegistryKey command = open.OpenSubKey("command");
-        if (command.GetValue("").ToString() != $"\"{Application.ExecutablePath.Replace("LiveSplit.Register.exe", "LiveSplit.exe")}\" -l \"{"%1"}\"")
+        if (!string.Equals(
+            command.GetValue("").ToString(),
+            $"\"{LauncherExecutablePath}\" -l \"{"%1"}\"",
+            StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
 
         RegistryKey iconKey = lslApplicationKey.OpenSubKey("DefaultIcon");
-        if (iconKey.GetValue("").ToString() != $"{Path.GetDirectoryName(Application.ExecutablePath)}\\Resources\\{"LayoutFile.ico"}")
+        if (!string.Equals(
+            iconKey.GetValue("").ToString(),
+            $"{LauncherDirectory}\\Resources\\{"LayoutFile.ico"}",
+            StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
@@ -502,4 +514,14 @@ public static class FiletypeRegistryHelper
             }
         }
     }
+
+    public static string GetLauncherExecutablePath(string executablePath)
+    {
+        string executableDirectory = Path.GetDirectoryName(executablePath) ?? string.Empty;
+        return Path.Combine(executableDirectory, "LiveSplit.exe");
+    }
+
+    private static string LauncherExecutablePath => GetLauncherExecutablePath(Application.ExecutablePath);
+
+    private static string LauncherDirectory => Path.GetDirectoryName(LauncherExecutablePath) ?? string.Empty;
 }
